@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+# ke2 daemon disabled by default
+snapctl stop k3s-dbruno.k3s-daemon --disable
+
+# Default configuration
+snapctl set k3s-cmd-line="server"

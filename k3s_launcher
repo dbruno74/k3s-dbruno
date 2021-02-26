@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+k3s_cmd_line="$(snapctl get k3s-cmd-line)"
+$SNAP/bin/k3s $k3s_cmd_line

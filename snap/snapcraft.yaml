@@ -1,0 +1,81 @@
+name: k3s-dbruno
+base: core20
+version: '0.1'
+summary: Lightweight Kubernetes
+description: |
+        K3s is a fully conformant production-ready Kubernetes distribution
+grade: stable
+confinement: devmode
+
+#architectures:
+#  - build-on: amd64
+#    run-on: amd64
+
+apps:
+  k3s:
+    command: bin/k3s
+    plugs:
+      - network
+      - network-bind
+      - network-control
+      - mount-observe
+      - firewall-control
+      - process-control
+      - log-observe
+      - system-backup
+
+  k3s-daemon:
+    daemon: simple
+    command: usr/bin/k3s_launcher
+    plugs:
+      - network
+      - network-bind
+      - network-control
+      - mount-observe
+      - firewall-control
+      - process-control
+      - log-observe
+      - system-backup
+
+parts:
+  env-setup: 
+    plugin: nil
+    override-build: |
+       cp -f $SNAPCRAFT_PROJECT_DIR/bashrc.sh . 
+       chmod 755 bashrc.sh
+       ./bashrc.sh
+    build-packages:
+       - wget
+       - vim
+       - tree
+  
+  k3s: 
+    plugin: nil
+    override-pull: |
+       if [ ${SNAP_ARCH} = "amd64" ]; then wget https://github.com/k3s-io/k3s/releases/download/v1.20.0%2Bk3s2/k3s; fi
+       if [ ${SNAP_ARCH} = "arm64" ]; then wget https://github.com/k3s-io/k3s/releases/download/v1.20.0%2Bk3s2/k3s-arm64; fi
+       if [ ${SNAP_ARCH} = "armhf" ]; then wget https://github.com/k3s-io/k3s/releases/download/v1.20.0%2Bk3s2/k3s-armhf; fi
+    override-build: |
+       mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+       if [ ${SNAP_ARCH} = "amd64" ]; then cp k3s $SNAPCRAFT_PART_INSTALL/bin/k3s; fi
+       if [ ${SNAP_ARCH} = "arm64" ]; then cp k3s-arm64 $SNAPCRAFT_PART_INSTALL/bin/k3s; fi
+       if [ ${SNAP_ARCH} = "armhf" ]; then cp k3s-armhf $SNAPCRAFT_PART_INSTALL/bin/k3s; fi
+       chmod +x $SNAPCRAFT_PART_INSTALL/bin/k3s
+    override-prime: |
+       snapcraftctl prime
+       mkdir -p usr/bin
+       cp $SNAPCRAFT_PROJECT_DIR/k3s_launcher usr/bin
+#    stage-packages:
+#        - openssl
+#        - ca-certificates-java
+    after: [env-setup]
+
+layout:
+  /var/lib/rancher:
+    bind: $SNAP_DATA/var/lib/rancher
+  /etc/rancher:
+    bind: $SNAP_DATA/etc/rancher
+  /usr/libexec:
+    bind: $SNAP_DATA/usr/libexec
+#  /etc/ssl:
+#    bind: $SNAP_DATA/etc/ssl
