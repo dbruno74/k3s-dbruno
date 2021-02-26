@@ -1,5 +1,5 @@
 # k3s-dbruno
-K3s is a fully conformant production-ready Kubernetes distribution
+This is a snap of k3s, a fully conformant production-ready Kubernetes distribution
 
 ## Build
 Simply clone this tree and call `snapcraft` in the toplevel dir
